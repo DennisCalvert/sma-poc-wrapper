@@ -11,27 +11,43 @@ export default function DevTools() {
   // Initialize state from localStorage
   const [submodules, setSubmodules] = useState<SubmoduleConfig[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('devtools-submodules');
-      return saved ? JSON.parse(saved) : defaultSubmodules;
+      try {
+        const saved = localStorage.getItem('devtools-submodules');
+        return saved ? JSON.parse(saved) : defaultSubmodules;
+      } catch {
+        return defaultSubmodules;
+      }
     }
     return defaultSubmodules;
   });
   
   const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('devtools-flags');
-      return saved ? JSON.parse(saved) : defaultFeatureFlags;
+      try {
+        const saved = localStorage.getItem('devtools-flags');
+        return saved ? JSON.parse(saved) : defaultFeatureFlags;
+      } catch {
+        return defaultFeatureFlags;
+      }
     }
     return defaultFeatureFlags;
   });
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('devtools-submodules', JSON.stringify(submodules));
+    try {
+      localStorage.setItem('devtools-submodules', JSON.stringify(submodules));
+    } catch {
+      // Silently fail if localStorage is unavailable
+    }
   }, [submodules]);
 
   useEffect(() => {
-    localStorage.setItem('devtools-flags', JSON.stringify(featureFlags));
+    try {
+      localStorage.setItem('devtools-flags', JSON.stringify(featureFlags));
+    } catch {
+      // Silently fail if localStorage is unavailable
+    }
   }, [featureFlags]);
 
   const handleBranchChange = (index: number, branch: string) => {
@@ -49,8 +65,12 @@ export default function DevTools() {
   const handleReset = () => {
     setSubmodules(defaultSubmodules);
     setFeatureFlags(defaultFeatureFlags);
-    localStorage.removeItem('devtools-submodules');
-    localStorage.removeItem('devtools-flags');
+    try {
+      localStorage.removeItem('devtools-submodules');
+      localStorage.removeItem('devtools-flags');
+    } catch {
+      // Silently fail if localStorage is unavailable
+    }
   };
 
   return (

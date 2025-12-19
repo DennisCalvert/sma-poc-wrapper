@@ -17,16 +17,24 @@ export function WrapperProvider({ children }: { children: ReactNode }) {
   // Initialize state from localStorage in development mode
   const [submodules, setSubmodules] = useState<SubmoduleConfig[]>(() => {
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-      const saved = localStorage.getItem('devtools-submodules');
-      return saved ? JSON.parse(saved) : defaultSubmodules;
+      try {
+        const saved = localStorage.getItem('devtools-submodules');
+        return saved ? JSON.parse(saved) : defaultSubmodules;
+      } catch {
+        return defaultSubmodules;
+      }
     }
     return defaultSubmodules;
   });
   
   const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>(() => {
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-      const saved = localStorage.getItem('devtools-flags');
-      return saved ? JSON.parse(saved) : defaultFeatureFlags;
+      try {
+        const saved = localStorage.getItem('devtools-flags');
+        return saved ? JSON.parse(saved) : defaultFeatureFlags;
+      } catch {
+        return defaultFeatureFlags;
+      }
     }
     return defaultFeatureFlags;
   });
@@ -36,20 +44,23 @@ export function WrapperProvider({ children }: { children: ReactNode }) {
     if (process.env.NODE_ENV === 'development') {
       // Listen for storage changes (in case DevTools updates them)
       const handleStorageChange = () => {
-        const updated = localStorage.getItem('devtools-submodules');
-        const updatedFlags = localStorage.getItem('devtools-flags');
-        if (updated) setSubmodules(JSON.parse(updated));
-        if (updatedFlags) setFeatureFlags(JSON.parse(updatedFlags));
+        try {
+          const updated = localStorage.getItem('devtools-submodules');
+          const updatedFlags = localStorage.getItem('devtools-flags');
+          if (updated) setSubmodules(JSON.parse(updated));
+          if (updatedFlags) setFeatureFlags(JSON.parse(updatedFlags));
+        } catch {
+          // Silently ignore parse errors
+        }
       };
 
       window.addEventListener('storage', handleStorageChange);
-      
-      // Also poll for changes since storage event doesn't fire in the same tab
-      const interval = setInterval(handleStorageChange, 1000);
+      // Check for updates when window regains focus
+      window.addEventListener('focus', handleStorageChange);
 
       return () => {
         window.removeEventListener('storage', handleStorageChange);
-        clearInterval(interval);
+        window.removeEventListener('focus', handleStorageChange);
       };
     }
   }, []);
