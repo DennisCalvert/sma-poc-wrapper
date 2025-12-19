@@ -1,13 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Module Federation configuration
-  // Note: This is a conceptual wrapper - actual Module Federation setup
-  // would require webpack configuration in pages directory or external tools
-  // For Next.js App Directory, consider using dynamic imports with runtime configuration
-  
   webpack: (config, { isServer, webpack }) => {
-    if (!isServer) {
+    if (!isServer && webpack?.container) {
       // Add Module Federation plugin configuration
       const { ModuleFederationPlugin } = webpack.container;
       
