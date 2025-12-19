@@ -52,7 +52,7 @@ export default function DevTools() {
 
   const handleBranchChange = (index: number, branch: string) => {
     const updated = [...submodules];
-    updated[index].currentBranch = branch || undefined;
+    updated[index].currentBranch = branch ? branch : undefined;
     setSubmodules(updated);
   };
 

@@ -42,7 +42,9 @@ export function WrapperProvider({ children }: { children: ReactNode }) {
   // Listen for storage changes in development mode
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      // Listen for storage changes (in case DevTools updates them)
+      // Handle localStorage changes
+      // Note: storage event only fires for changes from other tabs/windows
+      // focus event ensures we sync when returning to this tab
       const handleStorageChange = () => {
         try {
           const updated = localStorage.getItem('devtools-submodules');
