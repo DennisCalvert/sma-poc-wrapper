@@ -3,7 +3,7 @@
 import { useWrapper } from '@/components/WrapperProvider';
 
 export default function Home() {
-  const { submodules, featureFlags, getSubmoduleBranch } = useWrapper();
+  const { federatedModules, featureFlags, getModuleUrl } = useWrapper();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-12 px-4">
@@ -14,20 +14,20 @@ export default function Home() {
             SMA POC Wrapper
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300">
-            Wrapper application for submodule management and feature flags
+            Wrapper application for federated module management and feature flags
           </p>
           <div className="mt-4 inline-block bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-4 py-2 rounded-full text-sm font-medium">
             {process.env.NODE_ENV === 'development' ? '🔧 Development Mode' : '🚀 Production Mode'}
           </div>
         </div>
 
-        {/* Submodules Section */}
+        {/* Federated Modules Section */}
         <section className="mb-12">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-            Loaded Submodules
+            Loaded Federated Modules
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {submodules.map((submodule, index) => (
+            {federatedModules.map((module, index) => (
               <div
                 key={index}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-gray-200 dark:border-gray-700"
@@ -35,10 +35,10 @@ export default function Home() {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                      {submodule.name}
+                      {module.name}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {submodule.repository}
+                      {module.scope}/{module.module}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -57,15 +57,15 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-start">
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Active Branch:
-                    </span>
-                    <span className="font-mono text-sm bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded">
-                      {getSubmoduleBranch(submodule.name)}
+                      Remote URL:
                     </span>
                   </div>
-                  {submodule.currentBranch && (
+                  <div className="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded break-all">
+                    {getModuleUrl(module.name)}
+                  </div>
+                  {module.overrideUrl && (
                     <div className="mt-2 text-xs text-purple-600 dark:text-purple-400 flex items-center gap-1">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -79,7 +79,7 @@ export default function Home() {
                           clipRule="evenodd"
                         />
                       </svg>
-                      Branch override active
+                      URL override active
                     </div>
                   )}
                 </div>
@@ -161,7 +161,7 @@ export default function Home() {
               <ul className="mt-3 space-y-2 text-purple-800 dark:text-purple-200">
                 <li className="flex items-start gap-2">
                   <span className="text-purple-500 mt-1">•</span>
-                  <span>Override submodule branches for testing different versions</span>
+                  <span>Override federated module remote URLs for testing different deployments</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-purple-500 mt-1">•</span>

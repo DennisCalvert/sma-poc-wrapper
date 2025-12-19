@@ -1,8 +1,10 @@
-export interface SubmoduleConfig {
+export interface FederatedModuleConfig {
   name: string;
-  defaultBranch: string;
-  currentBranch?: string;
-  repository: string;
+  remoteUrl: string;
+  defaultVersion?: string;
+  overrideUrl?: string;
+  scope: string;
+  module: string;
 }
 
 export interface FeatureFlag {
@@ -12,6 +14,6 @@ export interface FeatureFlag {
 }
 
 export interface DevToolsState {
-  submodules: SubmoduleConfig[];
+  federatedModules: FederatedModuleConfig[];
   featureFlags: FeatureFlag[];
 }

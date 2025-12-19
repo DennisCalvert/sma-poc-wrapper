@@ -1,15 +1,19 @@
-import { SubmoduleConfig, FeatureFlag } from '@/types';
+import { FederatedModuleConfig, FeatureFlag } from '@/types';
 
-export const defaultSubmodules: SubmoduleConfig[] = [
+export const defaultFederatedModules: FederatedModuleConfig[] = [
   {
     name: 'example-module-1',
-    defaultBranch: 'main',
-    repository: 'https://github.com/example/module-1',
+    remoteUrl: 'http://localhost:3001/remoteEntry.js',
+    scope: 'exampleModule1',
+    module: './App',
+    defaultVersion: '1.0.0',
   },
   {
     name: 'example-module-2',
-    defaultBranch: 'main',
-    repository: 'https://github.com/example/module-2',
+    remoteUrl: 'http://localhost:3002/remoteEntry.js',
+    scope: 'exampleModule2',
+    module: './App',
+    defaultVersion: '1.0.0',
   },
 ];
 

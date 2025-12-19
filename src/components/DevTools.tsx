@@ -1,24 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { SubmoduleConfig, FeatureFlag } from '@/types';
-import { defaultSubmodules, defaultFeatureFlags } from '@/lib/config';
+import { FederatedModuleConfig, FeatureFlag } from '@/types';
+import { defaultFederatedModules, defaultFeatureFlags } from '@/lib/config';
 
 export default function DevTools() {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'submodules' | 'flags'>('submodules');
+  const [activeTab, setActiveTab] = useState<'modules' | 'flags'>('modules');
   
   // Initialize state from localStorage
-  const [submodules, setSubmodules] = useState<SubmoduleConfig[]>(() => {
+  const [federatedModules, setFederatedModules] = useState<FederatedModuleConfig[]>(() => {
     if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem('devtools-submodules');
-        return saved ? JSON.parse(saved) : defaultSubmodules;
+        const saved = localStorage.getItem('devtools-federated-modules');
+        return saved ? JSON.parse(saved) : defaultFederatedModules;
       } catch {
-        return defaultSubmodules;
+        return defaultFederatedModules;
       }
     }
-    return defaultSubmodules;
+    return defaultFederatedModules;
   });
   
   const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>(() => {
@@ -36,11 +36,11 @@ export default function DevTools() {
   // Save state to localStorage whenever it changes
   useEffect(() => {
     try {
-      localStorage.setItem('devtools-submodules', JSON.stringify(submodules));
+      localStorage.setItem('devtools-federated-modules', JSON.stringify(federatedModules));
     } catch {
       // Silently fail if localStorage is unavailable
     }
-  }, [submodules]);
+  }, [federatedModules]);
 
   useEffect(() => {
     try {
@@ -50,10 +50,10 @@ export default function DevTools() {
     }
   }, [featureFlags]);
 
-  const handleBranchChange = (index: number, branch: string) => {
-    const updated = [...submodules];
-    updated[index].currentBranch = branch ? branch : undefined;
-    setSubmodules(updated);
+  const handleUrlChange = (index: number, url: string) => {
+    const updated = [...federatedModules];
+    updated[index].overrideUrl = url ? url : undefined;
+    setFederatedModules(updated);
   };
 
   const handleFlagToggle = (index: number) => {
@@ -63,10 +63,10 @@ export default function DevTools() {
   };
 
   const handleReset = () => {
-    setSubmodules(defaultSubmodules);
+    setFederatedModules(defaultFederatedModules);
     setFeatureFlags(defaultFeatureFlags);
     try {
-      localStorage.removeItem('devtools-submodules');
+      localStorage.removeItem('devtools-federated-modules');
       localStorage.removeItem('devtools-flags');
     } catch {
       // Silently fail if localStorage is unavailable
@@ -124,14 +124,14 @@ export default function DevTools() {
           {/* Tabs */}
           <div className="flex border-b border-gray-200 dark:border-gray-700">
             <button
-              onClick={() => setActiveTab('submodules')}
+              onClick={() => setActiveTab('modules')}
               className={`flex-1 px-4 py-3 font-medium transition-colors ${
-                activeTab === 'submodules'
+                activeTab === 'modules'
                   ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-b-2 border-purple-600'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
-              Submodules
+              Federated Modules
             </button>
             <button
               onClick={() => setActiveTab('flags')}
@@ -147,48 +147,48 @@ export default function DevTools() {
 
           {/* Content */}
           <div className="p-4 max-h-[400px] overflow-y-auto">
-            {activeTab === 'submodules' && (
+            {activeTab === 'modules' && (
               <div className="space-y-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Override submodule branches for testing
+                  Override federated module remote URLs for testing
                 </p>
-                {submodules.map((submodule, index) => (
+                {federatedModules.map((module, index) => (
                   <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                          {submodule.name}
+                          {module.name}
                         </h3>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {submodule.repository}
+                          Scope: {module.scope} | Module: {module.module}
                         </p>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div>
                         <label className="text-xs text-gray-600 dark:text-gray-400 block mb-1">
-                          Default Branch
+                          Default Remote URL
                         </label>
                         <input
                           type="text"
-                          value={submodule.defaultBranch}
+                          value={module.remoteUrl}
                           disabled
                           className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400"
                         />
                       </div>
                       <div>
                         <label className="text-xs text-gray-600 dark:text-gray-400 block mb-1">
-                          Override Branch (optional)
+                          Override URL (optional)
                         </label>
                         <input
                           type="text"
-                          value={submodule.currentBranch || ''}
-                          onChange={(e) => handleBranchChange(index, e.target.value)}
-                          placeholder="e.g., feature/new-feature"
+                          value={module.overrideUrl || ''}
+                          onChange={(e) => handleUrlChange(index, e.target.value)}
+                          placeholder="e.g., http://localhost:3005/remoteEntry.js"
                           className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         />
                       </div>
-                      {submodule.currentBranch && (
+                      {module.overrideUrl && (
                         <div className="text-xs text-purple-600 dark:text-purple-400 flex items-center gap-1">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -202,7 +202,7 @@ export default function DevTools() {
                               clipRule="evenodd"
                             />
                           </svg>
-                          Using override: {submodule.currentBranch}
+                          Using override: {module.overrideUrl}
                         </div>
                       )}
                     </div>

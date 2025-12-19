@@ -1,12 +1,12 @@
 # SMA POC Wrapper
 
-A Next.js React wrapper application for managing and testing submodules from different GitHub repositories. This application provides developer tools for overriding submodule branches and toggling feature flags during development.
+A Next.js React wrapper application for managing federated modules using Webpack Module Federation. This application provides developer tools for overriding module remote URLs and toggling feature flags during development.
 
 ## Features
 
-- 🎯 **Submodule Management**: Configure and manage multiple Git submodules
+- 🎯 **Module Federation**: Configure and manage Webpack federated modules
 - 🔧 **Developer Tools**: Dev-mode-only tools for testing and debugging
-- 🌿 **Branch Override**: Switch submodules to different branches in development
+- 🌐 **URL Override**: Switch federated module remote URLs for testing different deployments
 - 🚩 **Feature Flags**: Toggle feature flags on/off for testing
 - 💾 **State Persistence**: Developer settings saved in localStorage
 - 🎨 **Modern UI**: Built with Tailwind CSS and dark mode support
@@ -37,7 +37,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 In development mode, you'll see a **"Dev Tools"** button in the bottom-right corner. Click it to:
 
-- Override submodule branches for testing
+- Override federated module remote URLs for testing
 - Toggle feature flags
 - Reset all settings to defaults
 
@@ -48,7 +48,7 @@ npm run build
 npm start
 ```
 
-In production mode, the developer tools are completely hidden and all submodules use their default branches.
+In production mode, the developer tools are completely hidden and all modules use their default remote URLs.
 
 ## Project Structure
 
@@ -56,30 +56,32 @@ In production mode, the developer tools are completely hidden and all submodules
 src/
 ├── app/                      # Next.js app directory
 │   ├── layout.tsx           # Root layout with providers
-│   ├── page.tsx             # Main page showing submodules and flags
+│   ├── page.tsx             # Main page showing modules and flags
 │   └── globals.css          # Global styles
 ├── components/              # React components
 │   ├── DevTools.tsx         # Developer tools panel
 │   ├── DevToolsWrapper.tsx  # Conditional wrapper for dev mode
 │   └── WrapperProvider.tsx  # Context provider for state management
 ├── lib/                     # Library code
-│   └── config.ts            # Default configuration for submodules and flags
+│   └── config.ts            # Default configuration for modules and flags
 └── types/                   # TypeScript type definitions
     └── index.ts             # Shared types
 ```
 
 ## Configuration
 
-### Adding Submodules
+### Adding Federated Modules
 
-Edit `src/lib/config.ts` to add or modify submodules:
+Edit `src/lib/config.ts` to add or modify federated modules:
 
 ```typescript
-export const defaultSubmodules: SubmoduleConfig[] = [
+export const defaultFederatedModules: FederatedModuleConfig[] = [
   {
     name: 'your-module-name',
-    defaultBranch: 'main',
-    repository: 'https://github.com/your-org/your-repo',
+    remoteUrl: 'http://localhost:3001/remoteEntry.js',
+    scope: 'yourModuleScope',
+    module: './App',
+    defaultVersion: '1.0.0',
   },
 ];
 ```
@@ -115,27 +117,27 @@ export default function YourComponent() {
 }
 ```
 
-### Getting Submodule Branch
+### Getting Module Remote URL
 
 ```typescript
 'use client';
 import { useWrapper } from '@/components/WrapperProvider';
 
 export default function YourComponent() {
-  const { getSubmoduleBranch } = useWrapper();
+  const { getModuleUrl } = useWrapper();
 
-  const branch = getSubmoduleBranch('example-module-1');
-  // Use the branch to load the correct version
+  const moduleUrl = getModuleUrl('example-module-1');
+  // Use the URL to load the federated module
 }
 ```
 
 ## Developer Tools
 
-### Submodules Tab
+### Federated Modules Tab
 
-- View all configured submodules
-- See default branches
-- Override branches temporarily for testing
+- View all configured federated modules
+- See default remote URLs, scopes, and exposed modules
+- Override remote URLs temporarily for testing different deployments
 - Visual indicators show when overrides are active
 
 ### Feature Flags Tab
@@ -149,11 +151,16 @@ export default function YourComponent() {
 
 Click "Reset All to Defaults" to clear all overrides and return to default configuration.
 
+## Webpack Module Federation
+
+This wrapper uses Webpack Module Federation to dynamically load remote modules at runtime. The configuration in `next.config.ts` sets up the host application, and developer tools allow testing different remote module deployments.
+
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS 4
+- **Module Federation**: Webpack Module Federation with @module-federation/nextjs-mf
 - **State Management**: React Context API
 - **Storage**: localStorage (development only)
 
@@ -161,6 +168,7 @@ Click "Reset All to Defaults" to clear all overrides and return to default confi
 
 - [Next.js Documentation](https://nextjs.org/docs)
 - [React Documentation](https://react.dev)
+- [Webpack Module Federation](https://webpack.js.org/concepts/module-federation/)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 
 ## License

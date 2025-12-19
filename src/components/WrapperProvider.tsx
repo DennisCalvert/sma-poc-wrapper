@@ -1,30 +1,30 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { SubmoduleConfig, FeatureFlag } from '@/types';
-import { defaultSubmodules, defaultFeatureFlags } from '@/lib/config';
+import { FederatedModuleConfig, FeatureFlag } from '@/types';
+import { defaultFederatedModules, defaultFeatureFlags } from '@/lib/config';
 
 interface WrapperContextType {
-  submodules: SubmoduleConfig[];
+  federatedModules: FederatedModuleConfig[];
   featureFlags: FeatureFlag[];
   isFeatureEnabled: (flagName: string) => boolean;
-  getSubmoduleBranch: (moduleName: string) => string;
+  getModuleUrl: (moduleName: string) => string;
 }
 
 const WrapperContext = createContext<WrapperContextType | undefined>(undefined);
 
 export function WrapperProvider({ children }: { children: ReactNode }) {
   // Initialize state from localStorage in development mode
-  const [submodules, setSubmodules] = useState<SubmoduleConfig[]>(() => {
+  const [federatedModules, setFederatedModules] = useState<FederatedModuleConfig[]>(() => {
     if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       try {
-        const saved = localStorage.getItem('devtools-submodules');
-        return saved ? JSON.parse(saved) : defaultSubmodules;
+        const saved = localStorage.getItem('devtools-federated-modules');
+        return saved ? JSON.parse(saved) : defaultFederatedModules;
       } catch {
-        return defaultSubmodules;
+        return defaultFederatedModules;
       }
     }
-    return defaultSubmodules;
+    return defaultFederatedModules;
   });
   
   const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>(() => {
@@ -47,9 +47,9 @@ export function WrapperProvider({ children }: { children: ReactNode }) {
       // focus event ensures we sync when returning to this tab
       const handleStorageChange = () => {
         try {
-          const updated = localStorage.getItem('devtools-submodules');
+          const updated = localStorage.getItem('devtools-federated-modules');
           const updatedFlags = localStorage.getItem('devtools-flags');
-          if (updated) setSubmodules(JSON.parse(updated));
+          if (updated) setFederatedModules(JSON.parse(updated));
           if (updatedFlags) setFeatureFlags(JSON.parse(updatedFlags));
         } catch {
           // Silently ignore parse errors
@@ -72,18 +72,18 @@ export function WrapperProvider({ children }: { children: ReactNode }) {
     return flag?.enabled ?? false;
   };
 
-  const getSubmoduleBranch = (moduleName: string): string => {
-    const submodule = submodules.find((m) => m.name === moduleName);
-    return submodule?.currentBranch || submodule?.defaultBranch || 'main';
+  const getModuleUrl = (moduleName: string): string => {
+    const federatedModule = federatedModules.find((m) => m.name === moduleName);
+    return federatedModule?.overrideUrl || federatedModule?.remoteUrl || '';
   };
 
   return (
     <WrapperContext.Provider
       value={{
-        submodules,
+        federatedModules,
         featureFlags,
         isFeatureEnabled,
-        getSubmoduleBranch,
+        getModuleUrl,
       }}
     >
       {children}
